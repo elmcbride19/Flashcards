@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="theme-color" content="#0c3467">
+  <title>ACA Scouting Flashcards</title>
+  <style>
+    :root { --navy:#0c3467; --cardinal:#c41e3a; --ink:#172033; }
+    * { box-sizing:border-box; }
+    body { margin:0; min-height:100vh; color:var(--ink); background:linear-gradient(145deg,#071d3a,var(--navy) 55%,#122b4a); font-family:Georgia,serif; }
+    main { width:min(760px,100%); margin:auto; padding:24px 18px 34px; }
+    header { color:white; text-align:center; margin-bottom:18px; }
+    .eyebrow { margin:0 0 5px; color:#ffccd2; font:700 12px/1.2 Arial,sans-serif; letter-spacing:.18em; text-transform:uppercase; }
+    h1 { margin:0; font-size:clamp(25px,6vw,40px); }
+    .sub { margin:7px 0 0; color:#dbe6f5; font:15px/1.4 Arial,sans-serif; }
+    .progress { height:7px; overflow:hidden; margin:16px 0 9px; border-radius:99px; background:#ffffff32; }
+    .progress span { display:block; width:0; height:100%; background:var(--cardinal); transition:width .25s ease; }
+    .meta { display:flex; justify-content:space-between; color:#dbe6f5; font:700 13px Arial,sans-serif; }
+    .stage { perspective:1100px; margin:15px 0; }
+    .card { position:relative; width:100%; min-height:390px; border:0; padding:0; cursor:pointer; background:transparent; transform-style:preserve-3d; transition:transform .45s cubic-bezier(.2,.75,.25,1); }
+    .card.flipped { transform:rotateY(180deg); }
+    .face { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:42px clamp(25px,7vw,60px); border-radius:22px; backface-visibility:hidden; box-shadow:0 18px 50px #0005; background:white; }
+    .back { color:white; background:linear-gradient(145deg,#a91529,var(--cardinal)); transform:rotateY(180deg); }
+    .label { position:absolute; top:25px; color:var(--cardinal); font:800 12px Arial,sans-serif; letter-spacing:.18em; text-transform:uppercase; }
+    .back .label { color:#ffe3e7; }
+    .text { margin:0; text-align:center; font-size:clamp(21px,4.7vw,33px); line-height:1.34; }
+    .hint { position:absolute; bottom:22px; opacity:.7; font:13px Arial,sans-serif; }
+    .controls { display:grid; grid-template-columns:1fr 1.35fr 1fr; gap:10px; }
+    button.control { min-height:50px; border:1px solid #ffffff45; border-radius:12px; color:white; background:#ffffff17; font:700 15px Arial,sans-serif; cursor:pointer; }
+    button.control:hover { background:#ffffff27; }
+    button.primary { border-color:var(--cardinal); background:var(--cardinal); }
+    .tools { display:flex; justify-content:center; gap:10px; margin-top:11px; }
+    .tools button { padding:10px 16px; border:0; border-radius:999px; color:#dbe6f5; background:transparent; font:700 13px Arial,sans-serif; cursor:pointer; }
+    .tools button:hover { background:#ffffff14; }
+    footer { margin-top:17px; color:#b7c9df; text-align:center; font:12px/1.5 Arial,sans-serif; }
+    @media (max-width:520px) { main{padding-top:17px}.card{min-height:430px}.controls{grid-template-columns:1fr 1fr}.primary{grid-column:1/-1;grid-row:1}.face{padding-inline:27px} }
+  </style>
+</head>
+<body>
+<main>
+  <header><p class="eyebrow">Montgomery Academy Football</p><h1>ACA Scouting Flashcards</h1><p class="sub">Tap the card to reveal the answer.</p></header>
+  <div class="progress"><span id="bar"></span></div>
+  <div class="meta"><span id="count"></span><span id="side">QUESTION</span></div>
+  <div class="stage"><button class="card" id="card" aria-label="Flip flashcard">
+    <section class="face front"><span class="label">Question</span><p class="text" id="question"></p><span class="hint">Tap to reveal answer</span></section>
+    <section class="face back"><span class="label">Answer</span><p class="text" id="answer"></p><span class="hint">Tap to return to question</span></section>
+  </button></div>
+  <div class="controls"><button class="control" id="prev">← Previous</button><button class="control primary" id="flip">Reveal answer</button><button class="control" id="next">Next →</button></div>
+  <div class="tools"><button id="shuffle">↻ Shuffle cards</button><button id="restart">Restart</button></div>
+  <footer>Keyboard: Space flips · Arrow keys move between cards</footer>
+</main>
+<script>
+const original=[["Who is the opponent's leading rusher according to the 2026 Defense Weekly Slides?","Player #7"],["How many total rushing yards does the opponent's leading rusher (#7) have?","185 yards"],["Who is the opponent's leading receiver in terms of yardage?","Player #11"],["How many receiving yards does player #11 have?","155 yards"],["Who is the opponent's leading scorer?","Player #11"],["How many total touchdowns has the leading scorer (#11) recorded?","4 TDs"],["What are the physical specifications of the opponent's quarterback, #13?","6' tall and 155 lbs"],["What is the opponent's overall pace of play?","Moderate tempo"],["How does the opponent typically signal the majority of their plays?","From the sideline"],["Which offensive personnel packages does the opponent mix to change looks?","10, 11, and 12 personnel"],["What type of cadence does the opponent use frequently to draw defenses offsides?","Freeze or no-play cadence"],["How many times has the opponent shown a 'no play' with jet action in two games?","4 times"],["What is the history regarding the opponent's pre-snap shifts?","History of illegal shifts with sloppy timing"],["What are the three primary components of the opponent's simple run scheme?","ISO, Buck Sweep (pin-pull), and Zone Read/RPO/GPO"],["The opponent's pass game relies heavily on throwing which specific route regardless of corner leverage?","The fade"],["What specific conditions make the young quarterback (#13) highly vulnerable?","Pressure and post-snap rotation"],["Why does the opponent use 'sprint-out' plays for quarterback #13?","To protect weak pass protection and simplify his reads"],["What are the physical characteristics of RB #7's running style?","Upright runner with low knee lift"],["How does RB #5 compare to #3 in terms of roles?","Solid spell back and a better blocker than #3"],["Under what condition is H-back #3 typically bullied while blocking?","When covered by a lineman head-up"],["Concept: Stacked H-back alignment","Indicator: Split-flow back-in"],["Concept: Outside H-back alignment","Indicator: Perimeter or buck run"],["What is the primary role of WR #11 in the passing game?","Iso routes, especially deep 1-on-1 routes"],["What is the role of WR #4 in the opponent's offensive concepts?","Designed runs off jet and orbit motions"],["What is the goal for the opponent's slot receivers in space?","Convert quick throws into chunk gains of 3 to 13 yards"],["What is the primary role of TEs #3, 5, and 9 in 12 personnel packages?","Block-first (with minimal receiving usage)"],["What is the standard range for the opponent's offensive line splits?","2-3 feet"],["Why does the opponent compress (cheat) their line splits?","To bring bodies inside for outside runs"],["Why does the opponent widen their line splits?","To create space for inside runs"],["What is the universal stance used across the opponent's offensive line?","2-point stance"],["Who is the opponent's biggest liability in the trench?","Right Guard #70"],["What issues does the sophomore center (#72) exhibit?","Inconsistent high snaps, mental busts, and pass protection liability"],["How quickly does the opponent's pocket typically collapse on standard drops?","Within 1.5 to 3.0 seconds"],["On which side of the line does the opponent prefer to run in short-yardage situations?","Left side (behind LG #52 and LT #77)"],["What is the primary area of focus for the Offensive Line in the run game?","Assert dominance and have no complacency"],["What is the area of focus for H-backs in the run game?","Being more physical on kick out blocks"],["What is the area of focus for Skill players in the run game?","Being great blockers in space by mirroring defenders"],["What is the 'Pass Game' area of focus for the Quarterback?","Be decisive and get the ball out quickly"],["What is the 'Pass Game' area of focus for the Receivers?","Understand the entire play and the full concept"],["Which personnel grouping is associated with the 'Brown', 'Blue', and 'Red' runs?","11 personnel"],["Which personnel grouping is associated with the 'Green' and 'Green Tight' runs?","21 personnel"],["What is the objective of 'F motions' in the opponent's offense?","To draw eyes and then hit a slant or post"],["How is 'Detached H/Y motion' (Jet motion) typically used by the opponent?","As a distraction (rarely results in a jet sweep)"],["What run play is signaled by an 'X Over' shift?","Buck Sweep"],["What is the 'Tactical Advantage' for the opponent's linebacking corps?","Heavy reliance on #5 for calls"],["Which opponent defensive back is identified as the biggest coverage liability?","Corner #21"],["What is the offensive strategy against opponent DE #77?","Test his speed in space"],["What is the tactical plan to wear down the opponent's front-seven?","Constant offensive tempo (due to nine two-way starters)"],["Who is identified as the opponent's best player in the secondary?","Safety #11"],["How should defensive edges attack the opponent's H-back kick-out?","With physical edges"],["What should the defense simulate to force errors from the young QB (#13)?","Simulate pressure and rotate coverage post-snap"],["What is the goal of baiting the B-gap against RB #7?","To force him into making awkward lateral cuts"],["In 12 personnel, which opponent player is tasked with following the TE?","Hubb"],["What is the typical result of the opponent's lack of coverage discipline in the secondary?","Wide-open receivers downfield"],["How should defensive backs tackle bigger bodies to avoid just 'diving'?","Cinch the ankles when gator rolling"],["What is the 'Mike' linebacker's run fit technique in 'Nickel Even Mirror'?","Match F and redirect on Guard pull opposite"],["Where should safeties align on the field before the opponent breaks?","On the hash"],["What defensive check is used for a 'True Empty' formation in Mint?","Bear Mom"],["What defensive check is used for a 'True Empty' formation in Nickel?","Even Play"],["In the opponent's pass game, what route do they love to run at the front pylon when inside the 15-yard line?","A comeback route"],["What is the assignment for Hubb in 'Situational Personnel: 13'?","Hubb to the TE"],["Which opponent player rotates to linebacker only in obvious passing situations?","Player #77"]]; let cards=original.slice(),index=0,flipped=false; const el=id=>document.getElementById(id);
+function render(){el('question').textContent=cards[index][0];el('answer').textContent=cards[index][1];el('count').textContent='Card '+(index+1)+' of '+cards.length;el('bar').style.width=((index+1)/cards.length*100)+'%';el('card').classList.toggle('flipped',flipped);el('side').textContent=flipped?'ANSWER':'QUESTION';el('flip').textContent=flipped?'Show question':'Reveal answer'}
+function flip(){flipped=!flipped;render()} function move(n){index=(index+n+cards.length)%cards.length;flipped=false;render()}
+el('card').onclick=flip;el('flip').onclick=flip;el('prev').onclick=()=>move(-1);el('next').onclick=()=>move(1);
+el('restart').onclick=()=>{cards=original.slice();index=0;flipped=false;render()};
+el('shuffle').onclick=()=>{for(let i=cards.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[cards[i],cards[j]]=[cards[j],cards[i]]}index=0;flipped=false;render()};
+document.addEventListener('keydown',e=>{if(e.code==='Space'){e.preventDefault();flip()}else if(e.key==='ArrowRight')move(1);else if(e.key==='ArrowLeft')move(-1)});render();
+</script></body></html>
