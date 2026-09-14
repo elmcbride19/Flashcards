@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Saint James Scouting Flashcards</title>
+  <style>
+    :root { --navy:#0c3467; --cardinal:#c41e3a; --ink:#122033; --muted:#667085; --paper:#f5f7fb; --white:#fff; }
+    * { box-sizing:border-box; }
+    body { margin:0; min-height:100vh; font-family:Georgia,serif; color:var(--ink); background:linear-gradient(145deg,#edf2f8,#fff 55%,#f8ecee); }
+    .wrap { width:min(920px,calc(100% - 28px)); margin:auto; padding:34px 0 28px; }
+    header { text-align:center; margin-bottom:24px; }
+    .eyebrow { color:var(--cardinal); font-weight:700; letter-spacing:.14em; text-transform:uppercase; font-size:.78rem; }
+    h1 { margin:8px 0 6px; color:var(--navy); font-family:"Libre Baskerville",Georgia,serif; font-size:clamp(1.8rem,5vw,3rem); }
+    .sub { margin:0; color:var(--muted); }
+    .progress-row { display:flex; align-items:center; gap:14px; margin:0 auto 14px; max-width:760px; }
+    .track { height:9px; flex:1; overflow:hidden; border-radius:999px; background:#dce3ec; }
+    .fill { height:100%; width:0; border-radius:inherit; background:linear-gradient(90deg,var(--navy),var(--cardinal)); transition:width .25s ease; }
+    .count { min-width:74px; color:var(--navy); font-weight:700; text-align:right; }
+    .scene { max-width:760px; height:390px; margin:auto; perspective:1200px; cursor:pointer; }
+    .card { position:relative; width:100%; height:100%; transform-style:preserve-3d; transition:transform .55s cubic-bezier(.2,.75,.25,1); }
+    .card.flipped { transform:rotateY(180deg); }
+    .face { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:clamp(28px,6vw,62px); border-radius:22px; backface-visibility:hidden; box-shadow:0 18px 45px rgba(12,52,103,.18); text-align:center; }
+    .front { color:var(--navy); background:var(--white); border-top:8px solid var(--cardinal); }
+    .back { color:var(--white); background:linear-gradient(145deg,var(--navy),#061d3d); border-top:8px solid var(--cardinal); transform:rotateY(180deg); }
+    .label { position:absolute; top:24px; font:700 .76rem Arial,sans-serif; letter-spacing:.16em; text-transform:uppercase; opacity:.7; }
+    .text { margin:0; font-size:clamp(1.25rem,3.2vw,2rem); line-height:1.38; }
+    .hint { position:absolute; bottom:22px; font:italic .88rem Georgia,serif; opacity:.58; }
+    .controls,.tools { display:flex; justify-content:center; flex-wrap:wrap; gap:10px; }
+    .controls { margin-top:18px; }
+    .tools { margin-top:12px; }
+    button { border:0; border-radius:10px; padding:12px 18px; font:700 .95rem Arial,sans-serif; cursor:pointer; transition:transform .15s,filter .15s; }
+    button:hover { transform:translateY(-1px); filter:brightness(1.05); }
+    .primary { color:#fff; background:var(--cardinal); }
+    .secondary { color:#fff; background:var(--navy); }
+    .ghost { color:var(--navy); background:#fff; border:1px solid #cfd8e4; }
+    .shortcuts { margin-top:18px; text-align:center; color:var(--muted); font-size:.85rem; }
+    @media(max-width:600px){ .wrap{padding-top:22px}.scene{height:430px}.face{padding:50px 24px 46px}.controls button{flex:1;min-width:96px;padding:12px 9px}.tools button{padding:10px 14px} }
+    @media(prefers-reduced-motion:reduce){ .card,.fill,button{transition:none} }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <header>
+      <div class="eyebrow">Montgomery Academy Football</div>
+      <h1>Saint James Scouting Flashcards</h1>
+      <p class="sub">Study the opponent. Know the answer before you reveal it.</p>
+    </header>
+    <div class="progress-row"><div class="track"><div class="fill" id="fill"></div></div><div class="count" id="count"></div></div>
+    <div class="scene" id="scene" role="button" tabindex="0" aria-label="Flashcard. Select to reveal answer.">
+      <div class="card" id="card">
+        <section class="face front"><span class="label">Question</span><p class="text" id="question"></p><span class="hint">Click card or press Space to reveal</span></section>
+        <section class="face back"><span class="label">Answer</span><p class="text" id="answer"></p><span class="hint">Click card or press Space to return</span></section>
+      </div>
+    </div>
+    <div class="controls">
+      <button class="secondary" id="prev">← Previous</button>
+      <button class="primary" id="reveal">Reveal Answer</button>
+      <button class="secondary" id="next">Next →</button>
+    </div>
+    <div class="tools"><button class="ghost" id="shuffle">Shuffle Cards</button><button class="ghost" id="restart">Restart</button></div>
+    <div class="shortcuts">Space flips · Arrow keys move between cards</div>
+  </main>
+  <script>
+    const original = [
+      ["What is the typical pace of play for the Saint James offense?","The team operates with a slow tempo and routinely walks to the line of scrimmage."],
+      ["Which specific snap cadence does the Saint James quarterback use exclusively?","The quarterback operates exclusively on a clap cadence for the snap."],
+      ["In the Saint James offense, what does frequent pre-snap motion strongly indicate?","Motion is a strong indicator of play direction, as the ball typically follows the motion."],
+      ["How is the Saint James offensive line technique characterized regarding pulling?","The offensive line does not pull and instead relies on down blocks and fold blocks."],
+      ["Which Saint James player is the primary ball carrier on standard downs?","Running back #22 is the primary ball carrier on standard downs."],
+      ["What is the primary role of freshman running back #7 in the Saint James offense?","He is used almost exclusively for jet sweeps as a gadget and motion player."],
+      ["What is the physical profile of Saint James quarterback #11?","He is a senior standing 6'2\" and weighing 165 lbs."],
+      ["Which direction does the Saint James offense design its sprint-outs for quarterback #11?","The offense is designed around sprint-outs to the quarterback's right side."],
+      ["What is the primary physical mismatch provided by Saint James player #12?","He provides a height mismatch at approximately 6'6\" tall."],
+      ["On which area of the field is Saint James #12 the primary target?","He is the primary target over the middle on short dump routes."],
+      ["Which Saint James wide receiver is considered the team's best pure receiver?","Wide receiver #6 is considered their best pure one-on-one receiver."],
+      ["What is the critical ball-security flaw identified for Saint James wide receiver #13?","He fumbles the ball often and is a target for defenders to punch it out."],
+      ["What specific route types are targeted for Saint James wide receiver #2?","He is targeted on designed plays such as dagger post routes and slow screens."],
+      ["Why does the Saint James offensive line utilize very tight splits down to 1 foot?","Tight splits are used in compressed sets to prevent interior gap penetration."],
+      ["What is the primary personnel strategy used to hide the weakest Saint James offensive lineman?","The offensive line flips sides regularly to hide player #75 at Guard or Tackle."],
+      ["Which Saint James offensive lineman is rated as the unit's worst player?","Right Guard #75 is rated as their worst and softest player."],
+      ["What is the base defensive front utilized by Saint James?","The base defensive front is a 5-0-5 structure."],
+      ["Where does Saint James defensive lineman #51 typically start the game?","He starts at the Nose position before bumping to a 5-tech as the game progresses."],
+      ["What is the identified technique weakness of Saint James defensive lineman #75?","He has poor technique and relies on a head-down, straight-line bull rush."],
+      ["Which Saint James defender is described as the most athletic box defender?","Hybrid linebacker #6 is described as the most athletic box defender."],
+      ["How does the Saint James defensive front react when linebacker #6 or #7 walks up pre-snap?","The front slants away from that player on more than 90% of snaps."],
+      ["What is the physical evaluation of Saint James inside linebacker #55?","He is a severely undersized box defender standing 5'8\" and weighing 147 lbs."],
+      ["Which Saint James defender is the primary blitzer on third-and-long situations?","Safety #18 is the primary blitzer on third-and-long plays."],
+      ["What is the pre-snap tell for a blitz by Saint James safety #18?","He creeps toward the B-gap or C-gap immediately before the snap."],
+      ["What is the base secondary coverage shell used by Saint James?","The base coverage is a Mid-2 or 2-Read system."],
+      ["How far off the line of scrimmage do Saint James cornerbacks typically align?","The cornerbacks typically align approximately 5 yards off the ball with inside leverage."],
+      ["What coverage does Saint James employ when facing an empty offensive set?","They play Cover 0 and blitz both inside linebackers consistently."],
+      ["What is the primary rotation weakness of the Saint James secondary?","The secondary struggles with turning and running to the middle of the field."],
+      ["In the Saint James 'roll-to-3' coverage, where does the opposite safety move post-snap?","The opposite safety sprints toward the middle of the field."],
+      ["Which Saint James cornerback is often isolated in press-man coverage on the backside?","Cornerback #13 is frequently isolated in press-man coverage on the backside."],
+      ["Where does Saint James safety #2 align relative to the receivers?","He aligns over the top of the #2 receiver pre-snap."],
+      ["What is the specific defensive rule for Saint James against a Tight End surface?","They bump the strong side to a 4-tech and walk the outside linebacker to a 9-tech."],
+      ["What is the identified fatigue factor for the Saint James secondary?","Thin roster depth forces several secondary players to play heavy snaps on both offense and defense."],
+      ["How frequently does Saint James linebacker #55 align in the box?","He aligns in the box on approximately 90% of snaps."],
+      ["What is the primary running style of Saint James running back #22?","He is a hard-nosed runner who breaks tackles at or behind the line of scrimmage."]
+    ];
+    let cards=[...original], index=0, flipped=false;
+    const el=id=>document.getElementById(id), card=el('card');
+    function render(){ flipped=false; card.classList.remove('flipped'); el('question').textContent=cards[index][0]; el('answer').textContent=cards[index][1]; el('count').textContent=`${index+1} / ${cards.length}`; el('fill').style.width=`${((index+1)/cards.length)*100}%`; el('reveal').textContent='Reveal Answer'; }
+    function flip(){ flipped=!flipped; card.classList.toggle('flipped',flipped); el('reveal').textContent=flipped?'Show Question':'Reveal Answer'; }
+    function move(n){ index=(index+n+cards.length)%cards.length; render(); }
+    el('scene').addEventListener('click',flip); el('reveal').addEventListener('click',flip); el('prev').addEventListener('click',()=>move(-1)); el('next').addEventListener('click',()=>move(1));
+    el('shuffle').addEventListener('click',()=>{ cards=[...cards].sort(()=>Math.random()-.5); index=0; render(); });
+    el('restart').addEventListener('click',()=>{ cards=[...original]; index=0; render(); });
+    document.addEventListener('keydown',e=>{ if(e.code==='Space'){e.preventDefault();flip();} if(e.key==='ArrowLeft')move(-1); if(e.key==='ArrowRight')move(1); });
+    render();
+  </script>
+</body>
+</html>
