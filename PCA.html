@@ -1,0 +1,269 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>PCA Scouting Flashcards</title>
+  <style>
+    :root { --navy:#0c3467; --cardinal:#c41e3a; --ink:#122033; --muted:#667085; --white:#fff; }
+    * { box-sizing:border-box; }
+    body { margin:0; min-height:100vh; font-family:Georgia,serif; color:var(--ink); background:linear-gradient(145deg,#edf2f8,#fff 55%,#f8ecee); }
+    .wrap { width:min(920px,calc(100% - 28px)); margin:auto; padding:34px 0 28px; }
+    header { text-align:center; margin-bottom:24px; }
+    .eyebrow { color:var(--cardinal); font-weight:700; letter-spacing:.14em; text-transform:uppercase; font-size:.78rem; }
+    h1 { margin:8px 0 6px; color:var(--navy); font-family:"Libre Baskerville",Georgia,serif; font-size:clamp(1.8rem,5vw,3rem); }
+    .sub { margin:0; color:var(--muted); }
+    .progress-row { display:flex; align-items:center; gap:14px; margin:0 auto 14px; max-width:760px; }
+    .track { height:9px; flex:1; overflow:hidden; border-radius:999px; background:#dce3ec; }
+    .fill { height:100%; width:0; border-radius:inherit; background:linear-gradient(90deg,var(--navy),var(--cardinal)); transition:width .25s ease; }
+    .count { min-width:74px; color:var(--navy); font-weight:700; text-align:right; }
+    .scene { max-width:760px; height:390px; margin:auto; perspective:1200px; cursor:pointer; }
+    .card { position:relative; width:100%; height:100%; transform-style:preserve-3d; transition:transform .55s cubic-bezier(.2,.75,.25,1); }
+    .card.flipped { transform:rotateY(180deg); }
+    .face { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:clamp(28px,6vw,62px); border-radius:22px; backface-visibility:hidden; box-shadow:0 18px 45px rgba(12,52,103,.18); text-align:center; }
+    .front { color:var(--navy); background:var(--white); border-top:8px solid var(--cardinal); }
+    .back { color:var(--white); background:linear-gradient(145deg,var(--navy),#061d3d); border-top:8px solid var(--cardinal); transform:rotateY(180deg); }
+    .label { position:absolute; top:24px; font:700 .76rem Arial,sans-serif; letter-spacing:.16em; text-transform:uppercase; opacity:.7; }
+    .text { margin:0; font-size:clamp(1.25rem,3.2vw,2rem); line-height:1.38; }
+    .hint { position:absolute; bottom:22px; font:italic .88rem Georgia,serif; opacity:.58; }
+    .controls,.tools { display:flex; justify-content:center; flex-wrap:wrap; gap:10px; }
+    .controls { margin-top:18px; } .tools { margin-top:12px; }
+    button { border:0; border-radius:10px; padding:12px 18px; font:700 .95rem Arial,sans-serif; cursor:pointer; transition:transform .15s,filter .15s; }
+    button:hover { transform:translateY(-1px); filter:brightness(1.05); }
+    .primary { color:#fff; background:var(--cardinal); } .secondary { color:#fff; background:var(--navy); }
+    .ghost { color:var(--navy); background:#fff; border:1px solid #cfd8e4; }
+    .shortcuts { margin-top:18px; text-align:center; color:var(--muted); font-size:.85rem; }
+    @media(max-width:600px){ .wrap{padding-top:22px}.scene{height:430px}.face{padding:50px 24px 46px}.controls button{flex:1;min-width:96px;padding:12px 9px}.tools button{padding:10px 14px} }
+    @media(prefers-reduced-motion:reduce){ .card,.fill,button{transition:none} }
+  </style>
+</head>
+<body>
+  <main class="wrap">
+    <header><div class="eyebrow">Montgomery Academy Football</div><h1>PCA Scouting Flashcards</h1><p class="sub">Study the opponent. Know the answer before you reveal it.</p></header>
+    <div class="progress-row"><div class="track"><div class="fill" id="fill"></div></div><div class="count" id="count"></div></div>
+    <div class="scene" id="scene" role="button" tabindex="0" aria-label="Flashcard. Select to reveal answer.">
+      <div class="card" id="card">
+        <section class="face front"><span class="label">Question</span><p class="text" id="question"></p><span class="hint">Click card or press Space to reveal</span></section>
+        <section class="face back"><span class="label">Answer</span><p class="text" id="answer"></p><span class="hint">Click card or press Space to return</span></section>
+      </div>
+    </div>
+    <div class="controls"><button class="secondary" id="prev">← Previous</button><button class="primary" id="reveal">Reveal Answer</button><button class="secondary" id="next">Next →</button></div>
+    <div class="tools"><button class="ghost" id="shuffle">Shuffle Cards</button><button class="ghost" id="restart">Restart</button></div>
+    <div class="shortcuts">Space flips · Arrow keys move between cards</div>
+  </main>
+  <script>
+    const original = [
+  [
+    "What overall tempo does PCA's offense operate with during games?",
+    "PCA operates with a deliberate and slow overall tempo rather than a fast-break pace."
+  ],
+  [
+    "PCA primarily communicates plays at the line of scrimmage using _____ signals.",
+    "sideline"
+  ],
+  [
+    "How does PCA's quarterback visually indicate cadence timing before the snap?",
+    "The quarterback brings his hands from far behind his hips in an exaggerated motion."
+  ],
+  [
+    "What pre-snap defensive tactic does PCA's quarterback hand movement tell enable?",
+    "It provides a clear timing trigger for creeping pressures and linebacker walk-ups."
+  ],
+  [
+    "PCA's H-Back #81 utilizes _____ motions in and out across the box.",
+    "hop"
+  ],
+  [
+    "What scheme is indicated when PCA aligns H-Back #81 inside or behind the tackle?",
+    "It indicates an inside Power or Counter run scheme."
+  ],
+  [
+    "What scheme is indicated when PCA aligns H-Back #81 outside the tackle?",
+    "It indicates a down block, stretch run, or route release."
+  ],
+  [
+    "Concept: Heavy Gap Offense (PCA)",
+    "Definition: Primary offensive scheme relying on frequent guard pulling. Example: Executing buck sweeps, belly, G-iso, trap, split zone, and standard power."
+  ],
+  [
+    "PCA's sophomore quarterback struggles significantly when experiencing defensive pressure inside the _____.",
+    "pocket"
+  ],
+  [
+    "What passing concepts make up the majority of PCA's quarterback throwing scheme?",
+    "Mirrored 2010s-era 2 × 2 concepts such as slant/bubble, dig/seam, and fade/out."
+  ],
+  [
+    "In what specific rushing situations does PCA utilize their quarterback as a downhill runner?",
+    "In short-yardage and fourth-down situations on true belly and cross-block schemes."
+  ],
+  [
+    "What running style defines PCA's primary ball carrier, RB #8?",
+    "He is a hard-nosed, one-cut downhill runner who lacks elite top speed."
+  ],
+  [
+    "What major defensive weakness is shared by both PCA running backs (#8 and #2)?",
+    "Both running backs are significant liabilities in pass protection."
+  ],
+  [
+    "How does RB #2's running style contrast with RB #8's running style?",
+    "RB #2 prefers bouncing runs to the outside rather than running between the tackles."
+  ],
+  [
+    "PCA wide receiver WR #1 is targeted 8+ times per game primarily on vertical shots and _____ routes.",
+    "fade"
+  ],
+  [
+    "What play concept is expected when WR #1 aligns inside rather than outside?",
+    "Designed touches such as screens, bubbles, jet sweeps, or rail comebacks."
+  ],
+  [
+    "What contact tendency does PCA's primary target WR #1 exhibit on pass routes?",
+    "He prefers operating in open space and actively avoids taking hits across the middle."
+  ],
+  [
+    "In addition to slot receiver duties and jet sweeps, WR #0 is used as a _____ quarterback.",
+    "Wildcat"
+  ],
+  [
+    "How does the entry of TE/H-Back #81 affect PCA's pass-to-run ratio?",
+    "The ratio shifts from 75/25 pass-heavy without him to 25/75 run-heavy with him."
+  ],
+  [
+    "What is the primary route threat when TE/H-Back #81 leaks out in the passing game?",
+    "Short-area flat routes."
+  ],
+  [
+    "How do PCA offensive guards signal the transition from pre-snap to cadence on QB 'down'?",
+    "Guards put a hand in the dirt to enter a 3-point stance while tackles stay in a 2-point stance."
+  ],
+  [
+    "Who is PCA's most effective active offensive lineman?",
+    "Left Tackle #64."
+  ],
+  [
+    "What technical weakness do PCA interior offensive linemen display during pulling assignments?",
+    "They often pull up and hesitate before initiating solid contact."
+  ],
+  [
+    "Which player is expected to start at center due to injury to PCA's best lineman #56?",
+    "#52 is expected to start at center."
+  ],
+  [
+    "What defensive pass rush tactics expose PCA's offensive line vulnerabilities?",
+    "Quick interior pressure, A/B gap blitzes, and defensive run-stunts."
+  ],
+  [
+    "PCA's right defensive tackle DT #54 is undersized, weighing only _____ pounds.",
+    "185"
+  ],
+  [
+    "Why is left defensive tackle DT #52 vulnerable to direct downhill run blocking?",
+    "He lacks a physical anchor due to being undersized at 210 pounds."
+  ],
+  [
+    "In what capacity does PCA deploy DT #77 (6'3\", 230 lbs)?",
+    "He rotates in on specific defensive packages."
+  ],
+  [
+    "What positional rule governs PCA defensive ends #81 and #64 pre-snap?",
+    "They do not flip sides and remain strictly on assigned left/right defensive edges."
+  ],
+  [
+    "Concept: Undersized Interior DL Exploitation",
+    "Definition: Offensive strategy targeting small defensive tackles. Example: Running direct gap schemes directly at PCA's #54 (185 lbs) and #52 (210 lbs)."
+  ],
+  [
+    "PCA primary inside linebackers #55 and #8 weigh _____ lbs and 185 lbs respectively.",
+    "180"
+  ],
+  [
+    "How do PCA's undersized inside linebackers compensate for lacking box physicality?",
+    "They rely on slanting up front and single LB blitzes rather than taking on blocks head-on."
+  ],
+  [
+    "What role does #2 play in PCA's defense against ACA's offensive looks?",
+    "He aligns as the primary Sam/Nickel linebacker."
+  ],
+  [
+    "What weakness does PCA cornerback CB #1 exhibit despite being their top overall player?",
+    "He can be lazy, avoids physical contact, and dislikes tackling."
+  ],
+  [
+    "Why do perimeter screens and perimeter sweeps yield high success against PCA's defense?",
+    "CB #1's reluctance to tackle creates major run-after-catch and open-field opportunities."
+  ],
+  [
+    "PCA Safety #1 shifts positions between cornerback and _____ depending on formation.",
+    "safety"
+  ],
+  [
+    "How did PCA adjust Safety #2's alignment when facing Trinity's condensed offensive sets?",
+    "They played Safety #2 in the middle of the field within a 3-safety look."
+  ],
+  [
+    "What physical vulnerability makes PCA's defensive line and secondary susceptible to tempo?",
+    "Undersized linemen and a rotational secondary are highly susceptible to fatigue."
+  ],
+  [
+    "What is the primary offensive instruction when blocking PCA cornerback #1 on the perimeter?",
+    "Force CB #1 to make open-field tackles on perimeter screens and sweeps."
+  ],
+  [
+    "What base defensive front is primarily expected from PCA's defense?",
+    "Nickel Over front."
+  ],
+  [
+    "Why does PCA's defensive line utilize front twisting and slanting upfront?",
+    "To compensate for their lack of interior line size."
+  ],
+  [
+    "How many inside linebackers does PCA typically send when calling a blitz?",
+    "PCA typically sends one linebacker and rarely blitzes both inside LBs simultaneously."
+  ],
+  [
+    "PCA linebackers mugged in the A-gaps pre-snap will occasionally drop into _____ post-snap.",
+    "coverage"
+  ],
+  [
+    "Concept: PCA Cover 2 (Cut)",
+    "Definition: Defensive coverage against perimeter screens. Example: Corners align up close facing the QB while safeties face WR #1 over top."
+  ],
+  [
+    "In PCA's Cover 3 (Standard) alignment, the boundary safety walks down to form a _____-man box.",
+    "4"
+  ],
+  [
+    "At what depth do PCA cornerbacks align when executing Cover 4 (Quarters)?",
+    "They align at a depth of 6 to 7 yards."
+  ],
+  [
+    "Which defensive shell is expected when the offense aligns in Orange or Yellow formations?",
+    "Cover 4 (Quarters)."
+  ],
+  [
+    "Despite installing 'Cut' coverage, PCA's defense has defended perimeter _____ poorly all season.",
+    "screens"
+  ],
+  [
+    "What pre-snap defender keys are critical for identifying PCA's defensive coverages?",
+    "Pre-snap reads on the cornerbacks and boundary safety."
+  ],
+  [
+    "How do PCA cornerbacks position themselves relative to the QB in standard Cover 3?",
+    "They align off and angled toward the quarterback."
+  ]
+];
+    let cards=[...original], index=0, flipped=false;
+    const el=id=>document.getElementById(id), card=el('card');
+    function render(){ flipped=false; card.classList.remove('flipped'); el('question').textContent=cards[index][0]; el('answer').textContent=cards[index][1]; el('count').textContent=`${index+1} / ${cards.length}`; el('fill').style.width=`${((index+1)/cards.length)*100}%`; el('reveal').textContent='Reveal Answer'; }
+    function flip(){ flipped=!flipped; card.classList.toggle('flipped',flipped); el('reveal').textContent=flipped?'Show Question':'Reveal Answer'; }
+    function move(n){ index=(index+n+cards.length)%cards.length; render(); }
+    el('scene').addEventListener('click',flip); el('reveal').addEventListener('click',flip); el('prev').addEventListener('click',()=>move(-1)); el('next').addEventListener('click',()=>move(1));
+    el('shuffle').addEventListener('click',()=>{ cards=[...cards].sort(()=>Math.random()-.5); index=0; render(); });
+    el('restart').addEventListener('click',()=>{ cards=[...original]; index=0; render(); });
+    document.addEventListener('keydown',e=>{ if(e.code==='Space'){e.preventDefault();flip();} if(e.key==='ArrowLeft')move(-1); if(e.key==='ArrowRight')move(1); });
+    render();
+  </script>
+</body>
+</html>
