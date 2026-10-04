@@ -1,0 +1,559 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Pike Lib Scouting Flashcards</title>
+
+  <style>
+    :root {
+      --navy: #0c3467;
+      --cardinal: #c41e3a;
+      --ink: #122033;
+      --muted: #667085;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: Georgia, serif;
+      color: var(--ink);
+      background: linear-gradient(145deg, #edf2f8, #fff 55%, #f8ecee);
+    }
+
+    .wrap {
+      width: min(920px, calc(100% - 28px));
+      margin: auto;
+      padding: 34px 0 28px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    .eyebrow {
+      color: var(--cardinal);
+      font-weight: 700;
+      letter-spacing: .14em;
+      text-transform: uppercase;
+      font-size: .78rem;
+    }
+
+    h1 {
+      margin: 8px 0 6px;
+      color: var(--navy);
+      font-family: "Libre Baskerville", Georgia, serif;
+      font-size: clamp(1.8rem, 5vw, 3rem);
+    }
+
+    .sub {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .progress-row {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin: 0 auto 14px;
+      max-width: 760px;
+    }
+
+    .track {
+      height: 9px;
+      flex: 1;
+      overflow: hidden;
+      border-radius: 999px;
+      background: #dce3ec;
+    }
+
+    .fill {
+      height: 100%;
+      width: 0;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--navy), var(--cardinal));
+      transition: width .25s ease;
+    }
+
+    .count {
+      min-width: 74px;
+      color: var(--navy);
+      font-weight: 700;
+      text-align: right;
+    }
+
+    .scene {
+      max-width: 760px;
+      height: 390px;
+      margin: auto;
+      perspective: 1200px;
+      cursor: pointer;
+    }
+
+    .card {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      transform-style: preserve-3d;
+      transition: transform .55s cubic-bezier(.2, .75, .25, 1);
+    }
+
+    .card.flipped { transform: rotateY(180deg); }
+
+    .face {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: clamp(28px, 6vw, 62px);
+      border-radius: 22px;
+      backface-visibility: hidden;
+      -webkit-backface-visibility: hidden;
+      box-shadow: 0 18px 45px rgba(12, 52, 103, .18);
+      text-align: center;
+    }
+
+    .front {
+      color: var(--navy);
+      background: #fff;
+      border-top: 8px solid var(--cardinal);
+    }
+
+    .back {
+      color: #fff;
+      background: linear-gradient(145deg, var(--navy), #061d3d);
+      border-top: 8px solid var(--cardinal);
+      transform: rotateY(180deg);
+    }
+
+    .label {
+      position: absolute;
+      top: 24px;
+      font: 700 .76rem Arial, sans-serif;
+      letter-spacing: .16em;
+      text-transform: uppercase;
+      opacity: .7;
+    }
+
+    .text {
+      margin: 0;
+      font-size: clamp(1.25rem, 3.2vw, 2rem);
+      line-height: 1.38;
+    }
+
+    .hint {
+      position: absolute;
+      bottom: 22px;
+      font: italic .88rem Georgia, serif;
+      opacity: .58;
+    }
+
+    .controls, .tools {
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .controls { margin-top: 18px; }
+    .tools { margin-top: 12px; }
+
+    button {
+      border: 0;
+      border-radius: 10px;
+      padding: 12px 18px;
+      font: 700 .95rem Arial, sans-serif;
+      cursor: pointer;
+      transition: transform .15s, filter .15s;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.05);
+    }
+
+    .primary {
+      color: #fff;
+      background: var(--cardinal);
+    }
+
+    .secondary {
+      color: #fff;
+      background: var(--navy);
+    }
+
+    .ghost {
+      color: var(--navy);
+      background: #fff;
+      border: 1px solid #cfd8e4;
+    }
+
+    .shortcuts {
+      margin-top: 18px;
+      text-align: center;
+      color: var(--muted);
+      font-size: .85rem;
+    }
+
+    @media (max-width: 600px) {
+      .wrap { padding-top: 22px; }
+      .scene { height: 430px; }
+      .face { padding: 50px 24px 46px; }
+      .controls button {
+        flex: 1;
+        min-width: 96px;
+        padding: 12px 9px;
+      }
+      .tools button { padding: 10px 14px; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .card, .fill, button { transition: none; }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="wrap">
+    <header>
+      <div class="eyebrow">Montgomery Academy Football</div>
+      <h1>Pike Lib Scouting Flashcards</h1>
+      <p class="sub">
+        Study the opponent. Know the answer before you reveal it.
+      </p>
+    </header>
+
+    <div class="progress-row">
+      <div class="track">
+        <div class="fill" id="fill"></div>
+      </div>
+      <div class="count" id="count"></div>
+    </div>
+
+    <div
+      class="scene"
+      id="scene"
+      role="button"
+      tabindex="0"
+      aria-label="Flashcard. Select to reveal answer."
+    >
+      <div class="card" id="card">
+        <section class="face front">
+          <span class="label">Question</span>
+          <p class="text" id="question"></p>
+          <span class="hint">Click card or press Space to reveal</span>
+        </section>
+
+        <section class="face back">
+          <span class="label">Answer</span>
+          <p class="text" id="answer"></p>
+          <span class="hint">Click card or press Space to return</span>
+        </section>
+      </div>
+    </div>
+
+    <div class="controls">
+      <button class="secondary" id="prev">← Previous</button>
+      <button class="primary" id="reveal">Reveal Answer</button>
+      <button class="secondary" id="next">Next →</button>
+    </div>
+
+    <div class="tools">
+      <button class="ghost" id="shuffle">Shuffle Cards</button>
+      <button class="ghost" id="restart">Restart</button>
+    </div>
+
+    <div class="shortcuts">
+      Space flips · Arrow keys move between cards
+    </div>
+  </main>
+
+  <script>
+    const original = [
+      [
+        "How is Pike Lib's standard offensive pace of play characterized?",
+        "It is primarily huddle-based and slow-paced, though they possess the capability to switch to a 'NASCAR tempo' style when required."
+      ],
+      [
+        "How does Pike Lib handle play signaling when operating without a huddle?",
+        "They signal from the sideline using a basic 'old school' system, and the offensive line walks to the line of scrimmage and gets set independently."
+      ],
+      [
+        "What cadence does Pike Lib utilize across all offensive formations?",
+        "A short, single clap cadence."
+      ],
+      [
+        "What is the primary tactical indicator when Pike Lib uses pre-snap motion?",
+        "Motion is limited but highly purposeful; motioning players are high-probability ball carriers (e.g., Jet Sweeps, QB Power Read, QB Counter Read)."
+      ],
+      [
+        "Which side of the field does Pike Lib's offense most frequently align strong toward?",
+        "The right side."
+      ],
+      [
+        "What is the core scheme identity of Pike Lib's run game?",
+        "A gap-scheme, power-based rushing identity centered on Power, Counter, and Stretch concepts."
+      ],
+      [
+        "What is the run probability when TE #6 is ON the field for Pike Lib?",
+        "80% to 95% run probability."
+      ],
+      [
+        "What is the pass probability when TE #6 is OFF the field for Pike Lib?",
+        "95% pass probability (60 pass plays vs. 4 run plays noted)."
+      ],
+      [
+        "How does Pike Lib structure pass protection on long-developing pass concepts?",
+        "They heavily utilize play-action and max protection (7-man protection)."
+      ],
+      [
+        "What route concepts does Pike Lib commonly feature in their deep passing game?",
+        "Daggers, Verticals, and Scissors concepts (frequently from condensed formations)."
+      ],
+      [
+        "In Pike Lib's two-QB system, what is the primary profile and role of QB #1?",
+        "A 5'8\", 155 lb junior who functions primarily as a traditional pocket passer in drop-back setups."
+      ],
+      [
+        "In Pike Lib's two-QB system, what is the primary profile and role of QB #0?",
+        "A 6'2\", 175 lb senior dual-threat runner (who also plays outside linebacker) and is the team's best overall runner."
+      ],
+      [
+        "How does the presence of QB #0 alter Pike Lib's play selection?",
+        "His presence significantly increases designated QB-run calls (such as QB Counter) and sprint-out passing concepts."
+      ],
+      [
+        "Is QB #0 used merely in a 'wildcat' setup when taking snaps?",
+        "No, QB #0 throws well and fully executes standard passing concepts."
+      ],
+      [
+        "What are the physical attributes and running style of primary RB #33?",
+        "A 5'8\", 170 lb one-cut, downhill runner who is a slow cutter and lacks elite top-end speed."
+      ],
+      [
+        "What limitation hinders RB #33 from consistently powering through tackles?",
+        "His size limitations prevent him from consistently pushing through defenders despite his physical running style."
+      ],
+      [
+        "What key traits define WR #0 (6'2\", 175 lbs, Sr) in Pike Lib's offense?",
+        "He is their most versatile and impactful skill player, primary contested-catch threat, and can create plays on his own."
+      ],
+      [
+        "How do undersized receivers WR #2 (5'6\", 140 lbs) and WR #13 (5'6\", 140 lbs) generate open looks?",
+        "They rely almost entirely on scheme concepts rather than individual athleticism or individual route-running skill."
+      ],
+      [
+        "What blocking limitations do TE/H-Backs #9 and #10 present?",
+        "Both are physically undersized (5'6\"–5'8\", 150–170 lbs) and limited in blocking effectiveness against strong front-seven defenders."
+      ],
+      [
+        "What is Pike Lib's recent starting offensive line combination from LT to RT?",
+        "LT #53 | LG #50 | C #54 | RG #55 | RT #52."
+      ],
+      [
+        "Why does Pike Lib scheme heavily to align strong right and run behind RT #52?",
+        "RT #52 (5'10\", 240+ lbs) is their biggest offensive lineman; they establish runs behind him before executing counter plays back left."
+      ],
+      [
+        "What is the primary strength and main weakness of LT #53 (6'0\", 195 lbs)?",
+        "He is the best pass setter on the line, but he is not a great down blocker."
+      ],
+      [
+        "What specific physical/mobility flaw is noted for RG #55 (5'7\", 175 lbs)?",
+        "A noted lack of movement compared to other guards."
+      ],
+      [
+        "How does the H-back fit in Pike Lib's slide pass protections?",
+        "The H-back slides in split flow opposite the offensive line slide direction to seal the backside edge."
+      ],
+      [
+        "What key scheme execution discrepancy exists regarding Pike Lib's run game?",
+        "While built around a GT/Power scheme, they do NOT execute the Buck Sweep as much as their personnel suggests."
+      ],
+      [
+        "What profile and capability defines interior defensive lineman #55 (5'7\", 175 lbs, Soph)?",
+        "He is small for an interior lineman but moves well and is considered one of their better front-seven players."
+      ],
+      [
+        "What is the notable characteristic of interior DL #52 (5'10\", 265 lbs, Soph) relative to his defensive line unit?",
+        "He is Pike Lib's biggest lineman, but the defensive line as a whole remains small and non-physical."
+      ],
+      [
+        "Which defensive ends play 5-technique in Pike Lib's defensive scheme?",
+        "DE #53 (6'0\", 195 lbs, Soph), DE #15 (5'7\", 145 lbs, Soph), and DE #5 (6'0\", 165 lbs, Jr)."
+      ],
+      [
+        "Besides 5-technique defensive end, where else does #5 (6'0\", 165 lbs, Jr) play?",
+        "He also sees operational playing time at cornerback."
+      ],
+      [
+        "Who serves as Pike Lib's primary Mike linebacker and key front-seven starter?",
+        "#56 (6'0\", 145 lbs, Soph)."
+      ],
+      [
+        "Which players rotate at middle linebacker for Pike Lib?",
+        "#6 (6'1\", 155 lbs, Soph), #33 (5'7\", 160 lbs, Soph), and #9 (5'6\", 150 lbs)."
+      ],
+      [
+        "Who lines up at the Sam linebacker position for Pike Lib?",
+        "#50 (5'11\", 175 lbs)."
+      ],
+      [
+        "What scouting evaluation is given for OLB #0 (6'2\", 175 lbs, Sr)?",
+        "He is the least physical player on defense, easily blocked out of plays, and a BAD edge player."
+      ],
+      [
+        "Which outside linebacker also sees rotation at the safety position?",
+        "#11 (5'6\", 140 lbs, Fr)."
+      ],
+      [
+        "Who are Pike Lib's primary starting cornerbacks?",
+        "#7 (5'11\", 130 lbs, Sr) and #8 (5'4\", 110 lbs, Fr)."
+      ],
+      [
+        "Which non-primary DBs rotate into cornerback duties for Pike Lib?",
+        "#0 (Sr), #13 (Sr), and #5 (Jr)."
+      ],
+      [
+        "Why does Pike Lib's frequent DB shuffling present a major offensive opportunity?",
+        "Inconsistent secondary sizes and frequent position swaps create major communication breakdowns and matchup advantages."
+      ],
+      [
+        "What is Pike Lib's primary defensive front look and base coverage shell?",
+        "A 4-4 front paired with a Country Cover 3 shell."
+      ],
+      [
+        "How does Pike Lib's defensive front align when showing a '22 Look'?",
+        "It presents as Nickel Over with a linebacker bumped out to a 3-technique alignment."
+      ],
+      [
+        "How does Pike Lib adjust their front against heavy personnel (e.g., 12 personnel)?",
+        "They show a Mint Bear look to pack the box while maintaining Cover 3 coverage behind it."
+      ],
+      [
+        "What is the ONLY defensive blitz package Pike Lib shows on film?",
+        "Double A-Gap Mug (walking both linebackers into the A-gaps and bringing them)."
+      ],
+      [
+        "What crucial tendency key exists regarding Pike Lib's Double A-Gap Mug blitz?",
+        "They always show it pre-snap before bringing it, and they have NEVER been seen dropping out once shown."
+      ],
+      [
+        "What is Pike Lib's primary coverage change-up in obvious passing situations?",
+        "Dropping one outside linebacker into a Cover 4 shell."
+      ],
+      [
+        "Which defensive players are key pre-snap reads for identifying Pike Lib's coverage?",
+        "The cornerbacks and the boundary safety."
+      ],
+      [
+        "How do DBs align pre-snap in Pike Lib's Cover 2 (Cut) scheme?",
+        "Corners align up close looking directly at the QB; safeties face the #1 WR over the top."
+      ],
+      [
+        "What pre-snap alignments characterize Pike Lib's standard Cover 3?",
+        "Single high safety, boundary safety walked down into a 4-man box, and corners off and angled to the QB."
+      ],
+      [
+        "What depth do cornerbacks play in Pike Lib's Cover 4 (Quarters) shell?",
+        "Aligned at a depth of 6 to 7 yards."
+      ],
+      [
+        "What perimeter passing attack has Pike Lib struggled to defend all season?",
+        "Perimeter screens (bubbles/nows), which they defend poorly even after installing 'Cut' coverage."
+      ],
+      [
+        "How can an offense exploit Corner #1 on perimeter pass concepts?",
+        "Exploit Corner #1's reluctance to tackle to generate major run-after-catch (RAC) yards."
+      ],
+      [
+        "What specific game plan recommendation is made regarding OLB #0 (6'2\", 175 lbs)?",
+        "Attack the edge directly at him, as he is easily blocked and inefficient at setting the edge."
+      ],
+      [
+        "What interior line matchup advantage should the offense exploit against Pike Lib's defense?",
+        "Exploit their small, non-physical interior defensive line by controlling the line of scrimmage."
+      ],
+      [
+        "Is defensive tempo counter-planning an explicit focus for this week's defensive preparation?",
+        "No, tempo is NOT a specific point of emphasis for this week's game plan."
+      ]
+    ];
+
+    let cards = [...original];
+    let index = 0;
+    let flipped = false;
+
+    const el = id => document.getElementById(id);
+    const card = el("card");
+
+    function render() {
+      flipped = false;
+      card.classList.remove("flipped");
+
+      el("question").textContent = cards[index][0];
+      el("answer").textContent = cards[index][1];
+      el("count").textContent = `${index + 1} / ${cards.length}`;
+      el("fill").style.width = `${((index + 1) / cards.length) * 100}%`;
+      el("reveal").textContent = "Reveal Answer";
+    }
+
+    function flip() {
+      flipped = !flipped;
+      card.classList.toggle("flipped", flipped);
+      el("reveal").textContent =
+        flipped ? "Show Question" : "Reveal Answer";
+    }
+
+    function move(amount) {
+      index = (index + amount + cards.length) % cards.length;
+      render();
+    }
+
+    el("scene").addEventListener("click", flip);
+    el("reveal").addEventListener("click", flip);
+    el("prev").addEventListener("click", () => move(-1));
+    el("next").addEventListener("click", () => move(1));
+
+    el("shuffle").addEventListener("click", () => {
+      cards = [...cards];
+
+      for (let i = cards.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [cards[i], cards[j]] = [cards[j], cards[i]];
+      }
+
+      index = 0;
+      render();
+    });
+
+    el("restart").addEventListener("click", () => {
+      cards = [...original];
+      index = 0;
+      render();
+    });
+
+    document.addEventListener("keydown", event => {
+      if (event.code === "Space") {
+        event.preventDefault();
+        flip();
+      }
+
+      if (event.key === "ArrowLeft") move(-1);
+      if (event.key === "ArrowRight") move(1);
+
+      if (event.key === "Enter" && event.target === el("scene")) {
+        event.preventDefault();
+        flip();
+      }
+    });
+
+    render();
+  </script>
+</body>
+</html>
