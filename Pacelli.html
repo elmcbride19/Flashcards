@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pacelli Scouting Flashcards</title>
+<style>
+  :root {
+    --navy: #0c3467;
+    --cardinal: #c41e3a;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    min-height: 100vh;
+    padding: 30px 16px;
+    background: linear-gradient(145deg, #061a36, var(--navy));
+    color: white;
+    font-family: Georgia, serif;
+  }
+
+  main {
+    width: min(100%, 800px);
+    margin: auto;
+    text-align: center;
+  }
+
+  .brand {
+    font-size: 14px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  h1 {
+    margin: 12px 0;
+    font-size: clamp(27px, 5vw, 40px);
+  }
+
+  .subtitle, footer {
+    color: #d0dcec;
+    line-height: 1.5;
+  }
+
+  .progress-track {
+    height: 7px;
+    margin: 24px 0 12px;
+    background: #ffffff25;
+    border-radius: 10px;
+    overflow: hidden;
+  }
+
+  #progress {
+    height: 100%;
+    background: var(--cardinal);
+    transition: width .2s;
+  }
+
+  #count { margin-bottom: 16px; }
+
+  button {
+    cursor: pointer;
+    font-family: Arial, sans-serif;
+    font-size: 16px;
+  }
+
+  button:focus-visible {
+    outline: 3px solid #ffcf69;
+    outline-offset: 5px;
+  }
+
+  .card {
+    display: block;
+    width: 100%;
+    border: 0;
+    border-radius: 20px;
+    padding: 0;
+    background: transparent;
+    color: var(--navy);
+    font-family: Georgia, serif;
+    perspective: 1400px;
+    text-align: center;
+  }
+
+  .card-inner {
+    display: grid;
+    transform-style: preserve-3d;
+    transition: transform .4s;
+  }
+
+  .card.flipped .card-inner {
+    transform: rotateY(180deg);
+  }
+
+  .face {
+    grid-area: 1 / 1;
+    min-height: 320px;
+    padding: 34px 28px;
+    border-radius: 20px;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: white;
+    box-shadow: 0 15px 40px #0003;
+  }
+
+  .back {
+    background: linear-gradient(135deg, var(--cardinal), #94162b);
+    color: white;
+    transform: rotateY(180deg);
+  }
+
+  .label {
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    opacity: .7;
+    margin-bottom: 22px;
+  }
+
+  .text {
+    font-size: clamp(21px, 3.5vw, 28px);
+    line-height: 1.45;
+    overflow-wrap: anywhere;
+    white-space: pre-wrap;
+  }
+
+  .hint {
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+    margin-top: 25px;
+    opacity: .65;
+  }
+
+  .controls {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr 1fr;
+    gap: 10px;
+    margin-top: 20px;
+  }
+
+  .controls button, .tools button {
+    padding: 14px 10px;
+    border: 1px solid #ffffff50;
+    border-radius: 10px;
+    background: #ffffff12;
+    color: white;
+    font-weight: bold;
+  }
+
+  #flip {
+    background: var(--cardinal);
+    border-color: var(--cardinal);
+  }
+
+  button:disabled {
+    opacity: .35;
+    cursor: default;
+  }
+
+  .tools {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 15px;
+  }
+
+  footer {
+    margin-top: 24px;
+    font-size: 13px;
+  }
+
+  @media (max-width: 520px) {
+    body { padding: 24px 12px; }
+    .face { padding: 28px 20px; min-height: 340px; }
+    .controls { gap: 7px; }
+    .controls button { font-size: 13px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      transition: none !important;
+    }
+  }
+</style>
+</head>
+<body>
+<main>
+  <div class="brand">Montgomery Academy Football</div>
+  <h1>Pacelli Scouting Flashcards</h1>
+  <p class="subtitle">Tap the card to reveal the answer.</p>
+
+  <div class="progress-track">
+    <div id="progress"></div>
+  </div>
+  <div id="count" aria-live="polite"></div>
+
+  <button class="card" id="card" aria-label="Reveal answer" aria-pressed="false">
+    <span class="card-inner">
+      <span class="face front" id="front">
+        <span class="label">Question</span>
+        <span class="text" id="question"></span>
+        <span class="hint">Tap to reveal answer</span>
+      </span>
+      <span class="face back" id="back" aria-hidden="true">
+        <span class="label">Answer</span>
+        <span class="text" id="answer"></span>
+        <span class="hint">Tap to see question</span>
+      </span>
+    </span>
+  </button>
+
+  <div class="controls">
+    <button id="prev">← Previous</button>
+    <button id="flip">Reveal answer</button>
+    <button id="next">Next →</button>
+  </div>
+
+  <div class="tools">
+    <button id="shuffle">↻ Shuffle cards</button>
+    <button id="restart">Restart</button>
+  </div>
+
+  <footer>Keyboard: Space flips · Arrow keys move between cards</footer>
+</main>
+
+<script>
+const original = [
+  ["What is the primary base identity of Pacelli's offensive scheme?",
+   "A zone-based run scheme (Inside Zone, Duo, Iso, Stretch) operating primarily into the boundary."],
+
+  ["What is the primary pull scheme used by Pacelli's offense?",
+   "Counter to the field (pulling RG #51 from right to left)."],
+
+  ["How does Pacelli structure its RPO and GPO concepts on run plays?",
+   "Nearly every run has a play-side RPO (slant/bubble/hitch) and a pre-snap backside gift route (fade/hitch/slant)."],
+
+  ["What is the tactical purpose of Pacelli's pre-snap motions (hop, jet, orbit)?",
+   "They are predominantly eye candy and distraction designed to conflict overhang defenders."],
+
+  ["Which side of their offensive line does Pacelli prefer to run behind in zone schemes?",
+   "The right side of the offensive line (behind RT #77)."],
+
+  ["What is the physical profile and class of starting Quarterback #5?",
+   "6'2\", 185 lbs, Senior."],
+
+  ["What are QB #5's primary decision-making strengths?",
+   "He is a decisive binary decision-maker who quickly takes pre-snap backside gifts and throws play-side RPO slants/bubbles on rhythm."],
+
+  ["How is QB #5's mobility characterized when healthy?",
+   "Functional mobility, but not utilized as a primary run threat."],
+
+  ["What is the physical profile and primary position of contingency QB #6?",
+   "5'10\", 165 lbs, Senior; slot receiver by trade but played QB when #5 was out."],
+
+  ["How does Pacelli's offensive scheme shift when QB #6 takes snaps at quarterback?",
+   "The offense shifts to strong overload sets featuring Q power and Q stretch QB-run concepts."],
+
+  ["What is the physical profile and running style of primary Running Back #22?",
+   "5'8\", 172 lbs, Senior; a smaller scat back with excellent vision who hits counter downhill and decisively."],
+
+  ["What key running habit does RB #22 display on zone concepts?",
+   "A frequent cutback tendency; he will bounce all the way back if backside lanes open up."],
+
+  ["What is the defensive key to stopping RB #22 on zone plays?",
+   "Set firm backside edges and close interior cutback lanes."],
+
+  ["What is the physical profile and season yardage leader role of WR #9?",
+   "5'11\", 176 lbs, Senior; primary X receiver and team volume leader with 672 yards."],
+
+  ["In what route concepts is WR #9 primarily featured?",
+   "Rub/pick designs, field isolation routes, RPO slants, hitches, and deep fades."],
+
+  ["What is the physical profile and role of WR #6?",
+   "5'10\", 205 lbs, Senior; slot-secondary target with 311 receiving yards."],
+
+  ["What key athletic trait makes WR #6 dangerous in space?",
+   "A compact build with high contact balance, creating a strong run-after-catch threat."],
+
+  ["What is the physical profile and blocking capability of primary H-Back #25?",
+   "6'5\", 220 lbs, Senior; an assignment-sound blocker who executes split zone, ISO insert, and backside seals."],
+
+  ["How is TE2 #21 utilized in Pacelli's personnel packages?",
+   "5'10\", 185 lbs, Sophomore; utilized in 12 personnel packages as a hard-contact blocker to add blocking surface."],
+
+  ["What is Pacelli's starting Offensive Line lineup from Left to Right?",
+   "LT #55 (282 lbs), LG #67 (278 lbs), C #70 (316 lbs), RG #51 (215 lbs), RT #77 (330 lbs)."],
+
+  ["Why is Right Guard #51 considered an offensive line stress point?",
+   "He has a lighter frame (215 lbs); the offense tries to hide him and pulls him on left counters to avoid mismatches."],
+
+  ["What role does Right Tackle #77 play in Pacelli's run game?",
+   "Massive anchor tackle (330 lbs) who serves as the primary run-behind target."],
+
+  ["What tactical strain is placed on Left Guard #67 during games?",
+   "He carries a heavy two-way load by playing significant defensive snaps at defensive tackle."],
+
+  ["What is the base structure of Pacelli's defensive front?",
+   "A Nickel Over structure with an interior shade in a tight, near head-up 1-technique."],
+
+  ["How frequently does Pacelli's defensive line stunt and slant?",
+   "Approximately 50% of the time to generate penetration and disrupt offensive blocking angles."],
+
+  ["What are the physical profile and weaknesses of starting DT #55?",
+   "6'3\", 282 lbs, Senior; possesses good size but lacks lateral mobility and elite physicality, allowing OL to establish leverage."],
+
+  ["What are the physical profile and limitations of starting DT #67?",
+   "6'0\", 278 lbs, Senior; carries solid bulk inside but struggles to anchor against physical, leveraged blocking."],
+
+  ["Which rotational DT tandem enters the game to spell DT #55 and DT #67?",
+   "DT #42 (5'9\", 198 lbs, Senior) and DT #44 (6'0\", 260 lbs, Freshman)."],
+
+  ["What is the physical profile and role of primary Defensive End #11?",
+   "5'11\", 210 lbs, Senior; top edge rusher who started every game and aligns to the boundary to box plays."],
+
+  ["What physical limitation affects rotational DE #60?",
+   "6'0\", 190 lbs; plays with decent effort but lacks ideal size to hold up against physical down blocks."],
+
+  ["What role does Outside Linebacker #1 play when rotating down to the defensive line?",
+   "5'10\", 185 lbs, Senior; operates primarily as a weakside edge/box player."],
+
+  ["What is the physical profile and tactical role of Middle Linebacker #4?",
+   "5'11\", 201 lbs; centerpiece of the second level, sole inside LB in nickel, frequently attacking interior gaps on blitzes."],
+
+  ["What is the physical profile and coverage role of Will Linebacker #0?",
+   "5'9\", 180 lbs, Senior; aligns in the box in 2-LB sets, drops effectively into coverage windows, and serves as primary MLB backup."],
+
+  ["What is starting Cornerback #6's primary coverage vulnerability?",
+   "5'8\", 155 lbs, Senior; vulnerable in isolated 1-on-1 single coverage and deep vertical routes against fast receivers."],
+
+  ["How does Pacelli utilize top cover Cornerback #12?",
+   "6'0\", 165 lbs, Senior; possesses superior height/speed and actively shadows opponent top receivers across the field."],
+
+  ["What is Safety #2's primary alignment against spread sets?",
+   "5'9\", 175 lbs, Senior; operates as the single-high, middle-of-the-field safety."],
+
+  ["How does Safety #9 adjust his alignment against trips and 3-receiver sets?",
+   "5'11\", 175 lbs, Senior; routinely pushes down toward trips alongside the Sam LB to provide underneath match support."],
+
+  ["What defensive front adjustments does Pacelli make in the red zone?",
+   "Checks into Mint and Bear looks to clog interior rushing lanes."],
+
+  ["How do Pacelli's linebackers execute two-LB pressure schemes?",
+   "They show late pre-snap movement and rush hard off the edge or shoot internal A/B gaps."],
+
+  ["What is Pacelli's primary base coverage against 10 personnel 3x1 sets?",
+   "Cover 3 Base."],
+
+  ["What coverage adjustment does Pacelli play against 2x2 double sets in 10 personnel?",
+   "Cover 4 (Quarters)."],
+
+  ["What coverage check does Pacelli call against Empty and Trips formations?",
+   "Cloud Coverage (corner rolls up underneath, safeties rotate over top)."],
+
+  ["What major defensive breakdown occurs when Pacelli checks to cloud coverage against Empty formations?",
+   "Communication breakdowns in cloud rules lead directly to coverage busts on deep vertical routes."],
+
+  ["Which Pacelli defensive hybrid players are most stressed by rapid offensive tempo?",
+   "Multi-position hybrid players (#13, #4, #9), causing alignment lag and coverage busts."],
+
+  ["In Cover 3, what are the respective responsibilities of Safety #2 and Safety #9?",
+   "Safety #2 plays deep Middle of the Field (MOF); Safety #9 triggers down underneath."]
+];
+
+let cards = original.slice();
+let index = 0;
+let flipped = false;
+
+const el = id => document.getElementById(id);
+
+function setFlipped(value) {
+  flipped = value;
+  el("card").classList.toggle("flipped", flipped);
+  el("card").setAttribute("aria-pressed", String(flipped));
+  el("card").setAttribute(
+    "aria-label",
+    flipped ? "Show question" : "Reveal answer"
+  );
+  el("front").setAttribute("aria-hidden", String(flipped));
+  el("back").setAttribute("aria-hidden", String(!flipped));
+  el("flip").textContent = flipped ? "Show question" : "Reveal answer";
+}
+
+function render() {
+  // Reset instantly so the next answer cannot flash during a transition.
+  const inner = el("card").querySelector(".card-inner");
+  inner.style.transition = "none";
+  setFlipped(false);
+
+  el("question").textContent = cards[index][0];
+  el("answer").textContent = cards[index][1];
+  el("count").textContent = `Card ${index + 1} of ${cards.length}`;
+  el("progress").style.width = `${((index + 1) / cards.length) * 100}%`;
+  el("prev").disabled = index === 0;
+  el("next").disabled = index === cards.length - 1;
+
+  void inner.offsetWidth;
+  inner.style.transition = "";
+}
+
+function move(direction) {
+  const target = index + direction;
+  if (target < 0 || target >= cards.length) return;
+  index = target;
+  render();
+}
+
+el("card").addEventListener("click", () => setFlipped(!flipped));
+el("flip").addEventListener("click", () => setFlipped(!flipped));
+el("prev").addEventListener("click", () => move(-1));
+el("next").addEventListener("click", () => move(1));
+
+el("shuffle").addEventListener("click", () => {
+  for (let i = cards.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [cards[i], cards[j]] = [cards[j], cards[i]];
+  }
+  index = 0;
+  render();
+});
+
+el("restart").addEventListener("click", () => {
+  cards = original.slice();
+  index = 0;
+  render();
+});
+
+document.addEventListener("keydown", event => {
+  if (event.altKey || event.ctrlKey || event.metaKey) return;
+
+  if (event.code === "Space") {
+    // Focused buttons already support Space through native activation.
+    if (event.target.closest("button, input, textarea, select")) return;
+    event.preventDefault();
+    setFlipped(!flipped);
+  } else if (event.key === "ArrowRight") {
+    event.preventDefault();
+    move(1);
+  } else if (event.key === "ArrowLeft") {
+    event.preventDefault();
+    move(-1);
+  }
+});
+
+render();
+</script>
+</body>
+</html>
