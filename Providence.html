@@ -1,0 +1,517 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Providence Christian Flashcards</title>
+<style>
+  :root {
+    --navy: #0c3467;
+    --cardinal: #c41e3a;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: #f1f4f8;
+    color: #152238;
+    font-family: Georgia, serif;
+  }
+
+  header {
+    background: var(--navy);
+    color: white;
+    padding: 28px 16px;
+    text-align: center;
+    border-bottom: 5px solid var(--cardinal);
+  }
+
+  h1 { margin: 0 0 8px; font-size: clamp(24px, 5vw, 36px); }
+  header p { margin: 0; }
+
+  main {
+    max-width: 800px;
+    margin: 28px auto;
+    padding: 0 16px 32px;
+  }
+
+  .toolbar, .controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin: 18px 0;
+  }
+
+  button {
+    border: 0;
+    border-radius: 8px;
+    padding: 13px 20px;
+    background: var(--navy);
+    color: white;
+    font: bold 16px Arial, sans-serif;
+    cursor: pointer;
+  }
+
+  button:hover { filter: brightness(1.15); }
+  button:focus-visible { outline: 3px solid #e6aa24; outline-offset: 4px; }
+  .accent { background: var(--cardinal); }
+
+  #counter {
+    font: bold 16px Arial, sans-serif;
+    text-align: center;
+    margin: 14px 0;
+  }
+
+  #card {
+    width: 100%;
+    min-height: 330px;
+    padding: 32px 24px;
+    background: white;
+    color: #152238;
+    border: 2px solid #d6deea;
+    border-top: 6px solid var(--navy);
+    border-radius: 16px;
+    box-shadow: 0 8px 26px #0c346714;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    text-align: center;
+    font: inherit;
+  }
+
+  #card:hover { filter: none; }
+  #card.answer { border-top-color: var(--cardinal); }
+
+  #side {
+    color: var(--navy);
+    font: bold 13px Arial, sans-serif;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+
+  #text {
+    font-size: clamp(21px, 4vw, 28px);
+    line-height: 1.5;
+    white-space: pre-wrap;
+  }
+
+  #hint {
+    font: 14px Arial, sans-serif;
+    color: #657084;
+  }
+
+  .instructions {
+    text-align: center;
+    color: #657084;
+    font: 14px/1.6 Arial, sans-serif;
+  }
+
+  progress {
+    display: block;
+    width: 100%;
+    height: 10px;
+    accent-color: var(--cardinal);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Providence Christian Flashcards</h1>
+  <p>Montgomery Academy Football</p>
+</header>
+
+<main>
+  <div class="toolbar">
+    <button id="shuffle" class="accent">Shuffle</button>
+    <button id="restart">Restart</button>
+  </div>
+
+  <div id="counter" aria-live="polite"></div>
+  <progress id="progress" value="1" max="66" aria-label="Card position"></progress>
+
+  <div style="margin-top: 20px">
+    <button id="card" aria-label="Flashcard. Select to reveal answer.">
+      <span id="side">Question</span>
+      <span id="text"></span>
+      <span id="hint">Tap to reveal answer</span>
+    </button>
+  </div>
+
+  <div class="controls">
+    <button id="previous">← Previous</button>
+    <button id="flip" class="accent">Show Answer</button>
+    <button id="next">Next →</button>
+  </div>
+
+  <p class="instructions">
+    Tap the card to flip it.<br>
+    Keyboard: ← Previous · → Next · Space to flip
+  </p>
+</main>
+
+<script>
+const cards = [
+  [
+    "What pace of play does the Providence Christian offense operate?",
+    "A no-huddle offense that checks at the line of scrimmage using diverse formations, including empty sets."
+  ],
+  [
+    "How does Providence Christian communicate offensive calls from the sideline?",
+    "Using a single signal caller with visible signals, including distinct indicators for RPO/GPO calls."
+  ],
+  [
+    "What cadence structure does the Providence Christian offense utilize?",
+    "An entirely verbal cadence with multiple variations and no hand clapping."
+  ],
+  [
+    "What is the primary role of player #4 in pre-snap motion?",
+    "Motions across the formation for jet sweeps, flat releases, and quarterback power-read looks."
+  ],
+  [
+    "What backfield movement cues a sprint-out pass concept for Providence Christian?",
+    "The running back scooting out of the backfield."
+  ],
+  [
+    "What foundational run scheme forms the core of Providence Christian's offense?",
+    "Gap scheme (power, trap, counter, GT counter, and power read) paired with selective zone concepts."
+  ],
+  [
+    "Where does the bulk of Providence Christian's offensive production originate?",
+    "RPO quick throws, including bubbles, slants, shoot routes, and tight end seams."
+  ],
+  [
+    "What major passing game limitation affects Providence Christian downfield?",
+    "Struggles with downfield accuracy and is not built to consistently attack deep."
+  ],
+  [
+    "How does Providence Christian deploy their tackle-over formation package?",
+    "As a base package (not limited to short yardage) from which they will throw."
+  ],
+  [
+    "Who is the leading rusher on the Providence Christian offensive roster?",
+    "Quarterback #9, who has accumulated ~624 rushing yards (~double any other back)."
+  ],
+  [
+    "What athletic background does Providence Christian quarterback #9 possess?",
+    "A basketball background with limited quarterback experience."
+  ],
+  [
+    "What defensive game plan is prescribed against quarterback #9 in the run game?",
+    "Maintain disciplined assignments on QB-run/power-read, hit him early, and force him to throw downfield."
+  ],
+  [
+    "What physical profile and running style describe running back #2?",
+    "A 5'7\", 142 lb senior compact downhill runner who runs hard and finishes with his shoulder."
+  ],
+  [
+    "What production profile defines sophomore playmaker #4?",
+    "A 5'9\", 146 lb top playmaker with ~300 rushing yards and >800 receiving yards who excels in open space."
+  ],
+  [
+    "What physical traits and route tendencies mark wide receiver #3?",
+    "A 6'5\", 185 lb senior running standard routes who is not consistently featured on fades or height throws."
+  ],
+  [
+    "What visible behavior does wide receiver #3 exhibit when left untargeted?",
+    "Shows visible frustration on the field."
+  ],
+  [
+    "What is the primary coverage focus when facing Providence Christian's wide receivers?",
+    "Stopping quick RPO throws to #4 rather than covering deep perimeter isolation routes."
+  ],
+  [
+    "What profile defines wide receiver #0?",
+    "A 5'10\", 150 lb senior who serves as a serviceable secondary receiving option when open."
+  ],
+  [
+    "What is the physical size and role of wide receiver #21?",
+    "A 6'0\", 131 lb sophomore rotational depth receiver."
+  ],
+  [
+    "How do TE/H-Backs #5 and #36 compare in blocking execution?",
+    "#36 (5'11\", 167 lbs) is the better blocker despite being smaller, while #5 (6'1\", 198 lbs) is less physical."
+  ],
+  [
+    "What route action is primarily assigned to TE/H-Back #5?",
+    "Releasing into the route tree on slip-route action."
+  ],
+  [
+    "How is TE/H-Back #36 used in tackle-over heavy packages?",
+    "Aligns with hand in the dirt to provide an extra blocking surface or tackle."
+  ],
+  [
+    "Who is the largest starting offensive lineman for Providence Christian?",
+    "Left tackle #58 (6'3\", 223 lbs, Sr.); all other starting linemen are under 6'0\" and 220 lbs."
+  ],
+  [
+    "Which lineman serves as the anchor and primary snapper for Providence Christian?",
+    "Center #61, identified as their best overall offensive lineman and most consistent snapper."
+  ],
+  [
+    "Why does the Providence Christian offensive line utilize tight 1-to-2 foot splits?",
+    "To limit interior penetration against their smaller offensive line front."
+  ],
+  [
+    "Which additional defenders step into Providence Christian's tackle-over packages?",
+    "DL #64, LB #51, or #36 serve as extra tackles, while LG #52 can step into the backfield."
+  ],
+  [
+    "What primary defensive attack point exploits Providence Christian's offensive line?",
+    "Interior DL penetration, capitalizing on their tight splits and undersized frames."
+  ],
+  [
+    "What pre-snap identifiers must a defense confirm before every snap against Providence Christian?",
+    "Confirm offensive strength, eligible receivers, and tackle-over alignments."
+  ],
+  [
+    "What technique and weakness define interior defensive lineman #58?",
+    "A 6'3\", 223 lb junior who plays high off the snap and comes off soft in interior engagements."
+  ],
+  [
+    "How should an offense tactically exploit defensive tackle #58?",
+    "Attack him directly with downhill power running and leverage blocking."
+  ],
+  [
+    "Where does defensive end #61 align on the field?",
+    "Aligns strictly to the boundary side playing a 4i technique and plays both ways."
+  ],
+  [
+    "Where does defensive end #64 align on the field?",
+    "Aligns strictly to the field side playing a 4i technique alongside OLB #6."
+  ],
+  [
+    "What unique role does defensive back #16 play on the defensive line?",
+    "Serves as the primary rotational defensive lineman subbing for DE #64 despite being listed as a DB."
+  ],
+  [
+    "What rule governs how Providence Christian's defensive line personnel flip alignments?",
+    "DL personnel flip strictly based on field/boundary orientation rather than offensive strength."
+  ],
+  [
+    "What profile and role define outside linebacker #5?",
+    "A 6'1\", 198 lb senior boundary edge player functioning as a true DE who rushes and sets the edge (rarely drops)."
+  ],
+  [
+    "How does field edge OLB #6 adjust in Cover 4 coverage?",
+    "Apexes out or bumps out over the #2 receiver into space to handle flat/collision curl."
+  ],
+  [
+    "Does field edge OLB #6 play both ways on offense and defense?",
+    "No, OLB #6 does NOT play both ways."
+  ],
+  [
+    "How do pass-rush duties differ between OLB #5 and OLB #6 on passing downs?",
+    "#5 routinely rushes off the boundary edge, while #6 drops into field-side coverage space."
+  ],
+  [
+    "What profile defines inside linebacker #52?",
+    "A 5'9\", 196 lb junior with a lineman body profile operating as an interior run fitter who plays both ways."
+  ],
+  [
+    "What profile defines inside linebacker #36 on defense?",
+    "An undersized 5'11\", 167 lb junior two-way interior run fitter playing inside the box."
+  ],
+  [
+    "What role does inside linebacker #51 fulfill?",
+    "A lineman-build rotational inside linebacker subbing in to fit interior run plays."
+  ],
+  [
+    "What alignment constraint and physical trait mark starting cornerback #12?",
+    "An undersized 5'8\", 130 lb sophomore who stays on his side of the field and presents a major physical mismatch."
+  ],
+  [
+    "How does starting cornerback #4 compare physically to #12?",
+    "A 5'9\", 146 lb two-way starter who is faster than #12 but still significantly undersized."
+  ],
+  [
+    "What weaknesses affect backup cornerback #20?",
+    "A 5'7\", 126 lb small frame back-up who lacks high-level technique and struggles in coverage."
+  ],
+  [
+    "What tactical exploit should opposing offenses target against Providence Christian's secondary?",
+    "Physically isolate receivers against fixed-side cornerbacks #12 and #20 since corners do not travel."
+  ],
+  [
+    "Where do safeties #2 and #0 align in Providence Christian's base scheme?",
+    "Align aggressively down in the box/flats at ~6 yards depth (#2 to boundary, #0 to field)."
+  ],
+  [
+    "How do safeties #0 and #2 adjust when facing a 3x1 trips formation?",
+    "Both safeties shift over to the strength of the 3x1 formation to match numbers."
+  ],
+  [
+    "Why is Providence Christian's defense exceptionally vulnerable to high-tempo offense?",
+    "A majority of key defensive starters (#0, #2, #4, #5, #36, #52, #61, #64) play both ways on a 40-man roster."
+  ],
+  [
+    "What technical breakdowns occur when Providence Christian defensive starters experience fatigue?",
+    "Late-game and late-drive fatigue leads to miscommunication, alignment lag, and missed tackles."
+  ],
+  [
+    "How does rapid offensive tempo exploit Providence Christian's defensive personnel?",
+    "Prevents defensive substitutions and forces exhausted two-way starters to defend consecutive snaps."
+  ],
+  [
+    "What base defensive front structure does Providence Christian operate?",
+    "A Tite/Mint base structure featuring 4i techniques with walked-up OLBs setting edges."
+  ],
+  [
+    "How does Providence Christian's defensive front align relative to strength?",
+    "Flips strictly by field/boundary (#64 and #6 to field; #61 and #5 to boundary) regardless of strength."
+  ],
+  [
+    "What pass rush scheme does Providence Christian utilize standardly?",
+    "A straight-up 5-man rush relying on beating blockers straight up, rarely running complex blitzes or stunts."
+  ],
+  [
+    "How does Providence Christian defend heavy, compressed sets like Black formation?",
+    "Loads up to 9 men in the box with pure man coverage on outside receivers."
+  ],
+  [
+    "What triggers the defensive line to slant into a 4-man front look?",
+    "When OLB #6 drops into coverage or bumps out into space."
+  ],
+  [
+    "How does the defensive line slant against jet motion or 3x1 formations?",
+    "Slants away from the walked-up boundary defender or away from the jet action."
+  ],
+  [
+    "What coverage scheme is nicknamed \"Wiregrass Special\" by Providence Christian?",
+    "An aggressive early-down Cover 0 look with safeties pressed down near 6 yards depth."
+  ],
+  [
+    "What perimeter weakness is created by early-down Cover 0 (\"Wiregrass Special\")?",
+    "Leaves starting cornerbacks #12 and #4 isolated in 1-on-1 man coverage without safety support."
+  ],
+  [
+    "In what specific down-and-distance situations does Providence Christian transition to Cover 4?",
+    "Obvious passing situations, specifically 2nd & long, 3rd & long, and 4th & long."
+  ],
+  [
+    "How do safety depths alter between early downs and obvious passing downs?",
+    "Safeties press down at ~6 yards depth in Cover 0 on early downs, then drop deep into Cover 4 quarters on passing downs."
+  ],
+  [
+    "The primary quick-game RPO target for Providence Christian who leads the team in receiving yards is player #_____.",
+    "#4"
+  ],
+  [
+    "Outside linebacker #5 plays on the _____ edge and rarely drops into pass coverage.",
+    "boundary"
+  ],
+  [
+    "Outside linebacker #6 plays on the _____ edge and bumps out into space in Cover 4.",
+    "field"
+  ],
+  [
+    "In base Cover 0 defense, safeties #2 and #0 align at a depth of approximately _____ yards.",
+    "6"
+  ],
+  [
+    "What route types does Providence Christian throw most frequently to player #4 off RPOs?",
+    "Bubbles, shoot routes, and slants near or behind the line of scrimmage."
+  ],
+  [
+    "What defensive front reaction occurs when jet motion is run across the formation against Providence Christian?",
+    "The defensive line slants away from the jet action."
+  ]
+];
+
+let order = cards.map((_, index) => index);
+let position = 0;
+let showingAnswer = false;
+
+const card = document.getElementById("card");
+const side = document.getElementById("side");
+const text = document.getElementById("text");
+const hint = document.getElementById("hint");
+const counter = document.getElementById("counter");
+const progress = document.getElementById("progress");
+const flipButton = document.getElementById("flip");
+
+function render() {
+  const current = cards[order[position]];
+  text.textContent = current[showingAnswer ? 1 : 0];
+  side.textContent = showingAnswer ? "Answer" : "Question";
+  hint.textContent = showingAnswer
+    ? "Tap to view question"
+    : "Tap to reveal answer";
+
+  flipButton.textContent = showingAnswer
+    ? "Show Question"
+    : "Show Answer";
+
+  card.classList.toggle("answer", showingAnswer);
+  card.setAttribute(
+    "aria-label",
+    `${side.textContent}: ${text.textContent}. ${hint.textContent}.`
+  );
+
+  counter.textContent = `Card ${position + 1} of ${cards.length}`;
+  progress.max = cards.length;
+  progress.value = position + 1;
+}
+
+function flip() {
+  showingAnswer = !showingAnswer;
+  render();
+}
+
+function move(direction) {
+  position = (position + direction + order.length) % order.length;
+  showingAnswer = false;
+  render();
+}
+
+card.addEventListener("click", flip);
+flipButton.addEventListener("click", flip);
+
+document.getElementById("previous").addEventListener("click", () => move(-1));
+document.getElementById("next").addEventListener("click", () => move(1));
+
+document.getElementById("shuffle").addEventListener("click", () => {
+  for (let i = order.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [order[i], order[j]] = [order[j], order[i]];
+  }
+
+  position = 0;
+  showingAnswer = false;
+  render();
+});
+
+document.getElementById("restart").addEventListener("click", () => {
+  order = cards.map((_, index) => index);
+  position = 0;
+  showingAnswer = false;
+  render();
+});
+
+document.addEventListener("keydown", event => {
+  if (event.altKey || event.ctrlKey || event.metaKey) return;
+
+  if (event.key === "ArrowLeft") {
+    event.preventDefault();
+    move(-1);
+  } else if (event.key === "ArrowRight") {
+    event.preventDefault();
+    move(1);
+  } else if (
+    event.code === "Space" &&
+    !["BUTTON", "INPUT", "TEXTAREA", "SELECT"].includes(document.activeElement.tagName)
+  ) {
+    event.preventDefault();
+    flip();
+  }
+});
+
+render();
+</script>
+</body>
+</html>
