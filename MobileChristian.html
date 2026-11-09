@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mobile Christian Flashcards</title>
+<style>
+  :root {
+    --navy: #0c3467;
+    --cardinal: #c41e3a;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    min-height: 100vh;
+    background: #f0f3f7;
+    color: var(--navy);
+    font-family: Georgia, serif;
+  }
+  header {
+    padding: 30px 16px;
+    text-align: center;
+    color: white;
+    background: var(--navy);
+    border-bottom: 6px solid var(--cardinal);
+  }
+  header p { margin: 0 0 10px; }
+  h1 { margin: 0; font-size: clamp(26px, 5vw, 38px); }
+  main {
+    width: min(850px, 100%);
+    margin: auto;
+    padding: 24px 16px 40px;
+  }
+  .intro, .hint { text-align: center; }
+  .counter { text-align: center; margin: 20px 0 10px; }
+  .track {
+    height: 8px;
+    overflow: hidden;
+    background: #dce2ea;
+    border-radius: 20px;
+    margin-bottom: 22px;
+  }
+  .fill { height: 100%; background: var(--cardinal); }
+  .card {
+    width: 100%;
+    min-height: 310px;
+    padding: 34px 26px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 24px;
+    background: white;
+    color: var(--navy);
+    border: 0;
+    border-top: 7px solid var(--navy);
+    border-radius: 18px;
+    box-shadow: 0 8px 28px #0c34671a;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .card.answer {
+    border-top-color: var(--cardinal);
+    background: var(--navy);
+    color: white;
+  }
+  .label {
+    font: bold 13px Arial, sans-serif;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+  .text {
+    font-size: clamp(21px, 3.5vw, 28px);
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+  }
+  .controls {
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-top: 22px;
+  }
+  .controls button {
+    padding: 13px 20px;
+    background: var(--navy);
+    color: white;
+    border: 0;
+    border-radius: 10px;
+    cursor: pointer;
+    font: bold 15px Georgia, serif;
+  }
+  .controls .primary { background: var(--cardinal); }
+  .controls .secondary {
+    background: white;
+    color: var(--navy);
+    border: 1px solid #c9d2df;
+  }
+  button:hover { filter: brightness(.94); }
+  button:focus-visible {
+    outline: 3px solid #e6a329;
+    outline-offset: 4px;
+  }
+  .hint { font-size: 14px; color: #58677a; margin-top: 24px; }
+  @media (max-width: 480px) {
+    .card { padding: 28px 20px; min-height: 340px; }
+    .controls button { padding: 12px 14px; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <p>Montgomery Academy Football</p>
+  <h1>Mobile Christian Flashcards</h1>
+</header>
+
+<main>
+  <p class="intro">Study the opponent. Know the answer before you reveal it.</p>
+
+  <p id="counter" class="counter" aria-live="polite"></p>
+  <div class="track" role="progressbar" aria-label="Card position"
+       aria-valuemin="1" id="progress">
+    <div id="fill" class="fill"></div>
+  </div>
+
+  <button id="card" class="card" type="button"
+          aria-label="Show answer" aria-pressed="false">
+    <span id="label" class="label">Question</span>
+    <span id="text" class="text"></span>
+  </button>
+
+  <div class="controls">
+    <button id="previous" type="button">← Previous</button>
+    <button id="reveal" class="primary" type="button">Show Answer</button>
+    <button id="next" type="button">Next →</button>
+  </div>
+
+  <div class="controls">
+    <button id="shuffle" class="secondary" type="button">Shuffle Cards</button>
+    <button id="restart" class="secondary" type="button">Restart</button>
+  </div>
+
+  <p class="hint">
+    Tap the card to flip · Space flips · Arrow keys move between cards
+  </p>
+</main>
+
+<script>
+const original = [
+  [
+    "How does Mobile Christian's offense generally operate regarding play tempo?",
+    "They operate with variable tempo—huddling at times and changing speed—rather than functioning as a consistent hurry-up offense."
+  ],
+  [
+    "What substitution cue indicates that Mobile Christian is bringing in their heavy offensive package?",
+    "Extra lineman #65 entering the field and QB #10 exiting signals their heavy package."
+  ],
+  [
+    "In Mobile Christian's offense, what play type does a \"Doubles\" formation strongly indicate?",
+    "A pass play."
+  ],
+  [
+    "What offensive concepts are indicated when Mobile Christian lines up in Trips with the running back aligned toward the trips side?",
+    "Zone read or now/slow screens."
+  ],
+  [
+    "What is Mobile Christian's pass frequency when operating in 10-personnel (orange/yellow) packages?",
+    "Approximately 85% pass frequency."
+  ],
+  [
+    "Who is the primary initial receiver read for Mobile Christian's starting quarterback?",
+    "WR #2."
+  ],
+  [
+    "What mechanical flaw is noted in QB #10's throwing profile on hitch routes and bubble screens?",
+    "He frequently misfires by either sailing the ball or putting it in the dirt."
+  ],
+  [
+    "How does starting QB #10 tend to handle broken plays when scrambling?",
+    "He extends plays effectively with better-than-expected speed, but often holds the ball too long instead of throwing it away."
+  ],
+  [
+    "Which players have taken snaps at Quarterback in Mobile Christian's Wildcat package?",
+    "Backup QB #9, as well as #2, #4, and #12."
+  ],
+  [
+    "How do Mobile Christian's running backs typically adapt when interior gaps close on run plays?",
+    "They act as hard runners who bounce plays to the outside."
+  ],
+  [
+    "In Mobile Christian's 50 pass protection scheme, what is the primary assignment of the running backs?",
+    "They step up to pick up interior gap pressure."
+  ],
+  [
+    "What pass protection vulnerability stresses Mobile Christian's running back pickup assignments?",
+    "Overload edge pressure originating from unexpected or non-traditional alignments."
+  ],
+  [
+    "What primary route concepts are run by Mobile Christian's leading receiver, WR #2?",
+    "Fades, digs, seams, and crossers."
+  ],
+  [
+    "What pre-snap alignment change by WR #2 serves as an alert that a targeted play is called for him?",
+    "Moving from his standard perimeter spot into the slot or an unusual alignment."
+  ],
+  [
+    "Where does Mobile Christian starter WR #3 predominantly align?",
+    "Outside on the right side of the offense."
+  ],
+  [
+    "What role does sophomore WR #5 fulfill in Mobile Christian's offensive scheme?",
+    "He is a quick, jittery slot receiver used primarily as the main option for bubble screens, now-screens, and jet sweeps."
+  ],
+  [
+    "How is TE/H-Back #9 evaluated as a blocker in Mobile Christian's run game?",
+    "He is a physical blocker with limited speed who mirrors or occupies defenders rather than delivering decisive kick-out blows."
+  ],
+  [
+    "What personnel change serves as a strong pass tendency indicator in Mobile Christian's offense?",
+    "When the H-back (#9 or #7) leaves the field in 10-personnel packages."
+  ],
+  [
+    "Who is identified as Mobile Christian's top offensive lineman and athletic inside anchor?",
+    "LT #53 (6'0\", 202 lbs Jr.)."
+  ],
+  [
+    "Why is RT #54 (220 lbs) designated as Mobile Christian's superior down blocker?",
+    "He possesses a larger build compared to the lighter, undersized linemen across their front."
+  ],
+  [
+    "Why does Mobile Christian's offensive line utilize very tight splits (1 to 2 feet)?",
+    "It reflects physical limitations in reaching and blocking defenders in space."
+  ],
+  [
+    "Which interior offensive linemen are identified as most vulnerable to direct gap pressure?",
+    "Right Guard #55, LG #72, and Center #75."
+  ],
+  [
+    "How has the build of Mobile Christian's offensive line evolved over the course of the season?",
+    "The unit shifted from a heavier build toward faster, more athletic personnel."
+  ],
+  [
+    "What is the main limitation of Mobile Christian DE #1 (6'3\", 221 lbs Sr.) that can be targeted in the run game?",
+    "He is not dominant enough to stop direct downhill power run plays."
+  ],
+  [
+    "How does Mobile Christian's defense utilize DE #9 in Bear front packages?",
+    "He walks up over the center to play as the interior nose tackle."
+  ],
+  [
+    "What alignment trait defines Mobile Christian DT #7's position on the interior line?",
+    "He stands up most of the time on the defense's left interior."
+  ],
+  [
+    "What coverage role does Mobile Christian DT #7 occasionally take on in drop-eight packages?",
+    "He backs out of the line to drop into coverage."
+  ],
+  [
+    "Why does Mobile Christian starting DT #53 become a target for physical exhaustion over 4 quarters?",
+    "He is an undersized interior starter (202 lbs) who plays both ways on offense and defense."
+  ],
+  [
+    "What offensive tempo technique exploits Mobile Christian DT #7's fixed alignment?",
+    "Executing rapid sugar tempo to the offensive left."
+  ],
+  [
+    "How is starting Mike LB #20 (5'10\", 156–165 lbs) evaluated against downhill running concepts?",
+    "He has an undersized frame that is easily pushed back by downhill running plays."
+  ],
+  [
+    "What structural vulnerability exists when backup inside linebackers #11 and #18 rotate into the box for Mobile Christian?",
+    "Both players are lightweight and undersized, causing them to struggle against heavy run fits."
+  ],
+  [
+    "Where does Mobile Christian Sam/Nickel #12 (5'9\", 165 lbs Fr.) align relative to the tackle box?",
+    "He aligns outside the tackle box as an overhang fitter rather than an interior box defender."
+  ],
+  [
+    "How can an offense exploit the overhang alignment of Mobile Christian Nickel #12?",
+    "By running away from him or attacking the weak side when safeties roll into the box."
+  ],
+  [
+    "How are Mobile Christian's starting cornerbacks (#2 and #6) aligned relative to the sidelines?",
+    "CB #2 aligns strictly on the opponent's sideline, while CB #6 aligns strictly on their home sideline."
+  ],
+  [
+    "How can an offense exploit Mobile Christian CB #6's alignment discipline?",
+    "Isolate receivers away from CB #2 and attack CB #6 before he receives sideline check adjustments from his coaches."
+  ],
+  [
+    "What is the alignment rule for Mobile Christian Right Safety #4 (5'8\", 133 lbs So.)?",
+    "He plays right safety full-time without flipping based on field or boundary position."
+  ],
+  [
+    "How does Mobile Christian Left Safety #3 adjust his alignment against heavy offensive personnel sets?",
+    "He rolls down into the tackle box as an extra run fitter."
+  ],
+  [
+    "What components make up Mobile Christian's streamlined 4-play tempo menu?",
+    "Two run concepts (power and counter) and two pass concepts (shots and waggles)."
+  ],
+  [
+    "In Mobile Christian's tempo signaling system, what do single-digit and double-digit calls indicate?",
+    "Single digits (2, 3, 4, 5) specify plays to the left, while double digits (22, 33, 44, 55) specify plays to the right."
+  ],
+  [
+    "How are directional calls communicated via sideline visual signals in Mobile Christian's tempo system?",
+    "One-handed visual signals indicate left-directional calls, while two-handed visual signals indicate right-directional calls."
+  ],
+  [
+    "What is the operational goal of the fake-check sequence?",
+    "To fake a sideline freeze, draw defensive eyes toward the sideline, and rapidly snap within 2 seconds for a deep pass."
+  ],
+  [
+    "Which Mobile Christian key two-way starters are targeted for exhaustion through rapid offensive tempo?",
+    "Players #2, #3, #4, #6, #9, and #53."
+  ],
+  [
+    "What defensive structure do Mobile Christian's pre-snap 4-man and 5-man stacks resolve into post-snap?",
+    "Five-techniques (#1 and #9) on the edges with #7 and #53 on the interior."
+  ],
+  [
+    "What tactical flaw occurs in Mobile Christian's defensive line pursuit angles during pass rushes?",
+    "Defensive linemen frequently rush out of position trying to reach designated gaps, opening cutback lanes."
+  ],
+  [
+    "Why does attacking the weak side against Mobile Christian's 4-man front create an offensive advantage?",
+    "It forces Left Safety #3 into the box as an undersized overhang fitter."
+  ],
+  [
+    "What coverage shell does Mobile Christian immediately rotate into against compressed tight-end sets (\"Yellow Close\")?",
+    "Cover 3 safety rotation."
+  ],
+  [
+    "How do Mobile Christian cornerbacks adjust alignment pre- and post-snap in Quarters coverage?",
+    "They align at 4 yards depth pre-snap and soft pedal to 8 yards depth post-snap."
+  ],
+  [
+    "In Mobile Christian's Cover 3 scheme, in which direction does safety rotation push?",
+    "Weak (away from Sam/Nickel #12)."
+  ],
+  [
+    "How do Mobile Christian safeties adjust their rotation when facing 3x1 Trips formations?",
+    "They roll toward the passing strength to match the three receivers in Man Free."
+  ],
+  [
+    "How does Mobile Christian's defense shift when facing 10-personnel Empty sets?",
+    "They shift to a 3-man Mint front with DT #7 dropping back into coverage in drop-eight."
+  ],
+  [
+    "What pre-snap motion is most frequently utilized by Mobile Christian's slot receivers?",
+    "Slot receiver motion for jet-sweep actions and alignment shifts."
+  ],
+  [
+    "How does Pistol backfield alignment dictate Mobile Christian's run concept?",
+    "Power/ISO is run when the back aligns to the key, split zone when away from the key, and counter when aligned to it."
+  ],
+  [
+    "What pass concept do Mobile Christian's bunch receiver formations frequently yield?",
+    "Dig, seam, and shoot concepts."
+  ]
+];
+
+let cards = original.slice();
+let position = 0;
+let showingAnswer = false;
+
+const card = document.getElementById("card");
+const label = document.getElementById("label");
+const text = document.getElementById("text");
+const counter = document.getElementById("counter");
+const fill = document.getElementById("fill");
+const progress = document.getElementById("progress");
+const reveal = document.getElementById("reveal");
+
+function render() {
+  label.textContent = showingAnswer ? "Answer" : "Question";
+  text.textContent = cards[position][showingAnswer ? 1 : 0];
+  card.classList.toggle("answer", showingAnswer);
+  card.setAttribute("aria-pressed", String(showingAnswer));
+  card.setAttribute(
+    "aria-label",
+    showingAnswer ? "Show question" : "Show answer"
+  );
+  reveal.textContent = showingAnswer ? "Show Question" : "Show Answer";
+  counter.textContent = `Card ${position + 1} of ${cards.length}`;
+  fill.style.width = `${((position + 1) / cards.length) * 100}%`;
+  progress.setAttribute("aria-valuemax", cards.length);
+  progress.setAttribute("aria-valuenow", position + 1);
+}
+
+function flip() {
+  showingAnswer = !showingAnswer;
+  render();
+}
+
+function move(amount) {
+  position = (position + amount + cards.length) % cards.length;
+  showingAnswer = false;
+  render();
+}
+
+card.addEventListener("click", flip);
+reveal.addEventListener("click", flip);
+document.getElementById("previous").addEventListener("click", () => move(-1));
+document.getElementById("next").addEventListener("click", () => move(1));
+
+document.getElementById("shuffle").addEventListener("click", () => {
+  for (let i = cards.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [cards[i], cards[j]] = [cards[j], cards[i]];
+  }
+  position = 0;
+  showingAnswer = false;
+  render();
+});
+
+document.getElementById("restart").addEventListener("click", () => {
+  cards = original.slice();
+  position = 0;
+  showingAnswer = false;
+  render();
+});
+
+document.addEventListener("keydown", event => {
+  if (event.altKey || event.ctrlKey || event.metaKey) return;
+  if (event.key === "ArrowLeft") {
+    event.preventDefault();
+    move(-1);
+  } else if (event.key === "ArrowRight") {
+    event.preventDefault();
+    move(1);
+  } else if (
+    event.code === "Space" &&
+    !event.target.closest("button, input, textarea, select, a")
+  ) {
+    event.preventDefault();
+    flip();
+  }
+});
+
+render();
+</script>
+</body>
+</html>
